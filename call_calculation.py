@@ -7,12 +7,15 @@ STOCKS = {}
 
 def retrieve_data(stock):
     dataframe = yf.download(tickers=stock, period='2d', interval='1d')
+    print(stock)
+    print(dataframe)
     return dataframe
 
 def edit_data(stock, dataframe):
     dataframe= dataframe.reset_index()
     df = dataframe[['Date', 'Close']]
-    df.loc[:,'Date'] = pd.to_datetime(df['Date'], yearfirst=True)
+    #df.loc[:,'Date'] = pd.to_datetime(df['Date'], yearfirst=True)
+    pd.to_datetime(df['Date'], yearfirst=True)
     df = df.tail(2) #in case a longer period is chosen
     difference_to_last_day = df.iloc[0,1] - df.iloc[1,1]
     percent_difference_to_last_day = df.iloc[1,1] / df.iloc[0,1]
@@ -27,7 +30,8 @@ def edit_data(stock, dataframe):
 def combine_edit_data():
     for name, ticker in stock_list.stock_tickers.items():
         dataframe = retrieve_data(ticker)
-        edit_data(name, dataframe)
+        if dataframe.shape[0] == 2: #sometimes apis does not offer yesterday's values
+            edit_data(name, dataframe)
     if len(STOCKS) > 0:
         df_stocks = pd.DataFrame.from_dict(STOCKS, orient='index', columns = ['Stocks'])
         
@@ -36,7 +40,3 @@ def combine_edit_data():
         return html_text
     else:
         return False
-
-
-
-
